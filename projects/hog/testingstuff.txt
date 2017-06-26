@@ -1,0 +1,37 @@
+import hog
+always = hog.always_roll
+hog.four_sided = hog.make_test_dice(1)
+hog.six_sided = hog.make_test_dice(3)
+
+s0, s1 = hog.play(always(4), always(4), score0=42, score1=96)
+
+
+strat0 = lambda score, opponent: opponent % 10
+strat1 = lambda score, opponent: opponent // 10
+s0, s1 = hog.play(strat0, strat1, score0=40, score1=92)
+
+
+import hog, importlib
+importlib.reload(hog)
+import tests.play_utils
+tests.play_utils.check_play_function(hog)
+
+
+
+
+>>> import hog, importlib
+>>> importlib.reload(hog)
+>>> import tests.play_utils
+>>> tests.play_utils.check_play_function(hog)
+Incorrect result after playing 4 game(s):
+----------------------------------------------------------------
+            score0  score1    Turn Summary
+----------------------------------------------------------------
+Turn 12:        46      17    Player 0 rolls 4 four-sided dice:
+               +14                2, 4, 4, 4
+                60      17    Dice sum: 14
+----------------------------------------------------------------
+Final Score:   100      96
+----------------------------------------------------------------
+Incorrect implementation of game at turn 12.
+Please read over the trace to find your error.
