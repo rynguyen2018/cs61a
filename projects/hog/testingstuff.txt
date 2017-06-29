@@ -19,10 +19,12 @@ tests.play_utils.check_play_function(hog)
 
 
 
->>> import hog, importlib
->>> importlib.reload(hog)
->>> import tests.play_utils
->>> tests.play_utils.check_play_function(hog)
+import hog, importlib
+importlib.reload(hog)
+import tests.play_utils
+tests.play_utils.check_play_function(hog)
+
+
 Incorrect result after playing 4 game(s):
 ----------------------------------------------------------------
             score0  score1    Turn Summary
@@ -35,3 +37,46 @@ Final Score:   100      96
 ----------------------------------------------------------------
 Incorrect implementation of game at turn 12.
 Please read over the trace to find your error.
+
+
+from hog import *
+def fail_15_20(score, opponent_score):
+	if score == 15 and opponent_score == 20:
+		return 100
+	return 5
+
+
+
+
+from hog import *
+dice = make_test_dice(3, 1, 5, 6)
+averaged_dice = make_averaged(dice, 1000)
+averaged_dice()
+
+from hog import *
+dice = make_test_dice(3)   # dice always returns 3
+max_scoring_num_rolls(dice, num_samples=1000)
+
+Six_sided
+1 3.52
+2 5.923
+3 7.345
+4 8.562
+5 8.696
+6 8.245
+7 9.121
+8 8.121
+9 8.108
+10 7.369
+
+Four sided 
+1 2.489
+2 3.746
+3 4.42
+4 4.442
+5 4.294
+6 3.73
+7 3.867
+8 3.229
+9 2.868
+10 2.856

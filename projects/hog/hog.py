@@ -18,10 +18,11 @@ def roll_dice(num_rolls, dice=six_sided):
         if outcome ==1:
             pigout=True 
             total=1
+            #return total
         elif pigout==False:
             total+=outcome 
-        #
-        print("Outcome ", str(i), ":", str(outcome))    
+
+        #print("Outcome ", str(i), ":", str(outcome))    
     return total
 
 def free_bacon(opponent_score):
@@ -48,7 +49,14 @@ def isPrime(score):
             return False 
         n+=1      
     return True 
-
+def hogPrime(score):
+    if isPrime(score)==True: 
+        score +=1 
+        while(isPrime(score)==False): 
+            score+=1 
+        return score
+    else:
+        return score
 
 
 def take_turn(num_rolls, opponent_score, dice=six_sided):
@@ -71,17 +79,12 @@ def take_turn(num_rolls, opponent_score, dice=six_sided):
 
     if num_rolls !=0 : 
         score =roll_dice(num_rolls,dice)
-        if isPrime(score)==True: 
-            score +=1 
-            while isPrime(score) ==False: 
-                score+=1 
+        score =hogPrime(score)
     else: 
         score= free_bacon(opponent_score)
 
-        if isPrime(score)==True: 
-            score +=1 
-            while(isPrime(score)==False): 
-                    score+=1 
+        score= hogPrime(score)
+
     return score  
 
 
@@ -154,59 +157,35 @@ def play(strategy0, strategy1, score0=0, score1=0, goal=GOAL_SCORE):
     player = 0  # Which player is about to take a turn, 0 (first) or 1 (second)
     dice_swapped = False # Whether 4-sided dice have been swapped for 6-sided
     current_dice= six_sided
+
     # BEGIN PROBLEM 6
     "*** REPLACE THIS LINE ***"
     count=1
     hasBeenSwapped= False
     taketurncount=0
-    while score0<goal or score1<goal:
-        addition0= take_turn(strategy0(score0,score1), score1,dice=current_dice)
-        taketurncount+=1
-        score0+=addition0
-        print("Turn: " + str(count))
-        print("We added ", str(addition0), "to score 0")
-        
-        print("score0: ", str(score0))
-        print("score1: ", str(score1))
-        
-        if is_swap(score0,score1) and hasBeenSwapped==False:
-            score0,score1= score1, score0 
-            if score0>=goal or score1>=goal:
-                return score0, score1 
-            print("hasBeenSwapped state after score 0 swap : ", hasBeenSwapped)
+    while score0<goal and score1<goal:
+        if player ==0: 
+            player_score= score0
+            loop_strategy= strategy0(score0, score1)
+            opponent_score=score1 
         else: 
-            hasBeenSwapped=False 
-
-        if score0>=goal: 
-            return score0, score1        
-        if is_perfect_piggy(addition0):
-            print("dice swap occured because of score 0")
+            player_score= score1
+            loop_strategy= strategy1(score1, score0)
+            opponent_score=score0  
+        addition= take_turn(loop_strategy, opponent_score,current_dice)
+        player_score+=addition
+    
+        if is_perfect_piggy(addition):
             dice_swapped= not dice_swapped
             current_dice= select_dice(dice_swapped)
-        addition1= take_turn(strategy1(score1,score0), score0, dice= current_dice)
-        score1+=addition1
-        print("We added ", str(addition1), "to score 1")
-        print("score0: ", str(score0))
-        print("score1: ", str(score1))
-        if is_swap(score0,score1) and hasBeenSwapped==False:
-            score0,score1= score1, score0
-            hasBeenSwapped=True
-            if score0>=goal or score1>=goal:
-                return score0, score1 
-            print("hasBeenSwapped state after score 1 swap: ", hasBeenSwapped)
-        else:  
-            hasBeenSwapped=False 
-        if score1>=goal:
-            return score0,score1
-        if is_perfect_piggy(addition1):
-            print("dice swap occured because of score 1")
-            dice_swapped=True 
-            current_dice= select_dice(dice_swapped)
-        input("press Enter to continue")
-        taketurncount+=1
-        count+=1
-        print("Take Turn count= 2: ",str(taketurncount==2))
-        taketurncount=0
+        if player ==0: 
+            score0= player_score
+            player =1
+        else: 
+            score1= player_score
+            player=0
+        if is_swap(score0, score1):
+            score0,score1= score1, score0 
     return score0, score1
 
 
@@ -231,7 +210,6 @@ def always_roll(n):
         return n
     return strategy
 
-
 def check_strategy_roll(score, opponent_score, num_rolls):
     """Raises an error with a helpful message if NUM_ROLLS is an invalid
     strategy output. All strategy outputs must be integers from -1 to 10.
@@ -255,7 +233,6 @@ def check_strategy_roll(score, opponent_score, num_rolls):
         score, opponent_score, num_rolls)
     assert type(num_rolls) == int, msg + ' (not an integer)'
     assert 0 <= num_rolls <= 10, msg + ' (invalid number of rolls)'
-
 
 def check_strategy(strategy, goal=GOAL_SCORE):
     """Checks the strategy with all valid inputs and verifies that the strategy
@@ -283,8 +260,14 @@ def check_strategy(strategy, goal=GOAL_SCORE):
     """
     # BEGIN PROBLEM 7
     "*** REPLACE THIS LINE ***"
-    # END PROBLEM 7
-
+    for score in range(0, goal+1): 
+        for opponent_score in range(0, goal+1):
+            check_strategy_roll(score, opponent_score, strategy(score, opponent_score))
+    
+    #, "returned 100 (invalid number of rolls)" 
+    #assert type(strategy)==  
+    #assert strategy==None
+    #assert type(strategy)== int
 
 # Experiments
 
@@ -299,10 +282,15 @@ def make_averaged(fn, num_samples=1000):
     >>> averaged_dice()
     3.0
     """
-    # BEGIN PROBLEM 8
-    "*** REPLACE THIS LINE ***"
-    # END PROBLEM 8
-
+    #def num_outcomes(): 
+    def average(*args):
+        
+        total =0  
+        for i in range(num_samples):
+            function_call= fn(*args)
+            total+= function_call
+        return total/num_samples
+    return average 
 
 def max_scoring_num_rolls(dice=six_sided, num_samples=1000):
     """Return the number of dice (1 to 10) that gives the highest average turn
@@ -316,6 +304,25 @@ def max_scoring_num_rolls(dice=six_sided, num_samples=1000):
     # BEGIN PROBLEM 9
     "*** REPLACE THIS LINE ***"
     # END PROBLEM 9
+    max_num_rolls=0
+    current_max_average= 0
+    num_rolls=1 
+    while num_rolls<=10:
+        average=0  
+        for i in range(1,num_rolls+1): 
+            average= make_averaged(roll_dice,num_samples)(i,dice)
+        if average> current_max_average: 
+            current_max_average= average
+            max_num_rolls=num_rolls
+        num_rolls+=1
+        
+    return max_num_rolls
+    
+
+
+        
+
+
 
 
 def winner(strategy0, strategy1):
@@ -357,7 +364,11 @@ def run_experiments():
     "*** You may add additional experiments as you wish ***"
 
 
+ 
+
 # Strategies
+
+
 
 def bacon_strategy(score, opponent_score, margin=8, num_rolls=4):
     """This strategy rolls 0 dice if that gives at least MARGIN points, and
@@ -365,7 +376,14 @@ def bacon_strategy(score, opponent_score, margin=8, num_rolls=4):
     """
     # BEGIN PROBLEM 10
     "*** REPLACE THIS LINE ***"
-    return 4  # Replace this statement
+    bacon_score= free_bacon(opponent_score) 
+    bacon_score= hogPrime(bacon_score)
+    if bacon_score >= margin:
+        return 0
+    else: 
+        return num_rolls
+
+    # Replace this statement
     # END PROBLEM 10
 check_strategy(bacon_strategy)
 
@@ -377,22 +395,72 @@ def swap_strategy(score, opponent_score, margin=8, num_rolls=4):
     """
     # BEGIN PROBLEM 11
     "*** REPLACE THIS LINE ***"
-    return 4  # Replace this statement
-    # END PROBLEM 11
+    
+    zero_roll_point_gain= free_bacon(opponent_score) #bacon_strategy(score, opponent_score, margin, num_rolls)
+    zero_roll_point_gain= hogPrime(zero_roll_point_gain)
+    if zero_roll_point_gain >= margin or zero_roll_point_gain+ score == opponent_score/2:
+        return 0
+    else: 
+        return num_rolls
+
+
+
 check_strategy(swap_strategy)
 
-
+#def calc_chances(score, opponent_score):
+    #six_score= max_scoring_num_rolls(dice=six_sided, num_samples=100)
+    #four_score= max_scoring_num_rolls(dice=four_sided, num_samples=100)
+    #if six_score
 
 def final_strategy(score, opponent_score):
     """Write a brief description of your final strategy.
-
+    pls forgive me. I wish I could say that there was sufficient reasoning for some of these conditional statements.  
+    Unfortunately, wishes don't always come true.  
     *** YOUR DESCRIPTION HERE ***
     """
     # BEGIN PROBLEM 11
     "*** REPLACE THIS LINE ***"
-    return 4  # Replace this statement
-    # END PROBLEM 11
+    
+    bacon_score= free_bacon(opponent_score) 
+    bacon_score= hogPrime(bacon_score)
+    score_diff= abs(opponent_score-score)
+
+
+
+    if opponent_score !=0 : 
+        swine_swap_score_needed= opponent_score/2 -score 
+    else: 
+        swine_swap_score_needed= 0
+
+
+
+    if score<=5 and opponent_score<=5:
+        return always_roll(2)(score, opponent_score)
+    elif score<opponent_score and  swine_swap_score_needed>=bacon_score:
+        return 0
+    elif score> opponent_score and bacon_score==8: 
+        return 0
+    elif score< opponent_score and (swine_swap_score_needed==3 or swine_swap_score_needed==5 ): 
+        return always_roll(1)(score,opponent_score)
+    elif score< opponent_score and (swine_swap_score_needed== 4 or swine_swap_score_needed==7 or swine_swap_score_needed==6 or swine_swap_score_needed ==8):
+        return always_roll(2)(score, opponent_score)
+    elif score< opponent_score and (swine_swap_score_needed==2 ): 
+        return always_roll(7)(score, opponent_score)
+    elif score< opponent_score and score_diff >= 19 and (bacon_score==4):
+        return 0
+    elif score ==99 or (swine_swap_score_needed==1 and score<opponent_score): 
+        return always_roll(10)(score,opponent_score)
+    elif score>=90 and opponent_score >= 53:
+        return 0
+    elif score< opponent_score and opponent_score- score>=20 : 
+       return swap_strategy(score, opponent_score, margin=9, num_rolls=5)
+    
+    else: 
+        return swap_strategy(score,opponent_score, margin= 7, num_rolls=4)
 check_strategy(final_strategy)
+
+
+
 
 
 ##########################
