@@ -12,26 +12,25 @@ def roll_dice(num_rolls, dice=six_sided):
 
     total=0
     pigout= False 
+    
     for i in range(num_rolls):
         outcome= dice()
-        #print("Outcome ", str(i), ":", str(outcome))
         if outcome ==1:
             pigout=True 
             total=1
-            #return total
         elif pigout==False:
-            total+=outcome 
-
-        #print("Outcome ", str(i), ":", str(outcome))    
+            total+=outcome  
     return total
 
 def free_bacon(opponent_score):
     """Return the points scored from rolling 0 dice (Free Bacon)."""
     # BEGIN PROBLEM 2
-    "*** REPLACE THIS LINE ***"
+
+    # an opponent with a score less than 10 will result in a bacon score equal to the opponent score +1 
     if opponent_score< 10 : 
         score = opponent_score+1
     else: 
+        #otherwise, we just take the max of the digits and add 1
         one_digit= opponent_score//10
         tens_digit= opponent_score%10 
         score= max(one_digit,tens_digit) +1 
@@ -44,19 +43,21 @@ def isPrime(score):
     n=2 
     if score ==1: 
         return False
+    # goes through all integers through the square root of the score (shoutout to Rocky for this efficient way of going through primes)
     while n*n<= score: 
         if score%n ==0: 
             return False 
         n+=1      
     return True 
+
+#because it ended up showing up so much later in strategy making, I made a Hog Prime function
 def hogPrime(score):
     if isPrime(score)==True: 
         score +=1 
         while(isPrime(score)==False): 
             score+=1 
         return score
-    else:
-        return score
+    return score
 
 
 def take_turn(num_rolls, opponent_score, dice=six_sided):
@@ -73,17 +74,15 @@ def take_turn(num_rolls, opponent_score, dice=six_sided):
     assert num_rolls >= 0, 'Cannot roll a negative number of dice in take_turn.'
     assert num_rolls <= 10, 'Cannot roll more than 10 dice.'
     assert opponent_score < 100, 'The game should be over.'
-    # BEGIN PROBLEM 2
-    "*** REPLACE THIS LINE ***"
-    score=0
 
+    score=0
+    #first we determine our score based on how many rolls we plan to take
     if num_rolls !=0 : 
         score =roll_dice(num_rolls,dice)
-        score =hogPrime(score)
     else: 
         score= free_bacon(opponent_score)
-
-        score= hogPrime(score)
+    #check if the score you receive is a prime number! 
+    score = hogPrime(score)
 
     return score  
 
@@ -95,9 +94,7 @@ def select_dice(dice_swapped):
     to Perfect Piggy. DICE_SWAPPED is True if and only if four-sided dice are in
     play.
     """
-    # BEGIN PROBLEM 3
-    "*** REPLACE THIS LINE ***"
-    #dice_swapped= is_perfect_piggy(turn_score)
+    # Dice swapped is a boolean. If it is true, return a four sided die. If not, return a six sided die. 
     if dice_swapped:
         return four_sided
     else: 
@@ -110,7 +107,7 @@ def select_dice(dice_swapped):
 
 def is_perfect_piggy(turn_score):
     """Returns whether the Perfect Piggy dice-swapping rule should occur."""
-    # BEGIN PROBLEM 4
+    # checks if your turn score is a perfect square or perfect cube.  Does not count 1 
     if ((turn_score**(1/2)== int(turn_score**(1/2)) or turn_score**(1/3)== int(turn_score**(1/3))) and turn_score!=1 ):
         return True
     else:
@@ -120,14 +117,12 @@ def is_perfect_piggy(turn_score):
 
 def is_swap(score0, score1):
     """Returns whether one of the scores is double the other."""
-    # BEGIN PROBLEM 5
-    "*** REPLACE THIS LINE ***"
+    # Does not do calculation for scores equaling zero
     if (score0 ==0 or score1==0):
         return False
     if (score0/score1== 0.5) or (score1/score0==0.5): 
         return True 
-    else:
-        return False 
+    return False 
 
 
 def other(player):
@@ -159,10 +154,7 @@ def play(strategy0, strategy1, score0=0, score1=0, goal=GOAL_SCORE):
     current_dice= six_sided
 
     # BEGIN PROBLEM 6
-    "*** REPLACE THIS LINE ***"
-    count=1
-    hasBeenSwapped= False
-    taketurncount=0
+    # runs simulation while goal has not been reached
     while score0<goal and score1<goal:
         if player ==0: 
             player_score= score0
@@ -172,18 +164,27 @@ def play(strategy0, strategy1, score0=0, score1=0, goal=GOAL_SCORE):
             player_score= score1
             loop_strategy= strategy1(score1, score0)
             opponent_score=score0  
+        # general operations for either player depending on whether player =0 or player =1. 
+        
+        # Score that you receive for a turn 
         addition= take_turn(loop_strategy, opponent_score,current_dice)
+        
+        #Total score
         player_score+=addition
-    
+        
+        #Checks for perfect piggy rule
         if is_perfect_piggy(addition):
             dice_swapped= not dice_swapped
             current_dice= select_dice(dice_swapped)
+        
+        #swaps players for next iteration of turn
         if player ==0: 
             score0= player_score
             player =1
         else: 
             score1= player_score
             player=0
+        #swaps scores if necessary
         if is_swap(score0, score1):
             score0,score1= score1, score0 
     return score0, score1
@@ -259,15 +260,12 @@ def check_strategy(strategy, goal=GOAL_SCORE):
     AssertionError: strategy(102, 115) returned 100 (invalid number of rolls)
     """
     # BEGIN PROBLEM 7
-    "*** REPLACE THIS LINE ***"
+
+    #Checks all valid combination of points and see if strategy works for all of them
     for score in range(0, goal+1): 
         for opponent_score in range(0, goal+1):
             check_strategy_roll(score, opponent_score, strategy(score, opponent_score))
-    
-    #, "returned 100 (invalid number of rolls)" 
-    #assert type(strategy)==  
-    #assert strategy==None
-    #assert type(strategy)== int
+
 
 # Experiments
 
@@ -282,9 +280,8 @@ def make_averaged(fn, num_samples=1000):
     >>> averaged_dice()
     3.0
     """
-    #def num_outcomes(): 
-    def average(*args):
-        
+    #gets average of function over num_samples 
+    def average(*args): 
         total =0  
         for i in range(num_samples):
             function_call= fn(*args)
@@ -301,16 +298,18 @@ def max_scoring_num_rolls(dice=six_sided, num_samples=1000):
     >>> max_scoring_num_rolls(dice)
     1
     """
-    # BEGIN PROBLEM 9
-    "*** REPLACE THIS LINE ***"
-    # END PROBLEM 9
     max_num_rolls=0
     current_max_average= 0
     num_rolls=1 
+
+    #iterates through rolling dice 1-10 times
     while num_rolls<=10:
         average=0  
+        # makes average for all possible rolling dice combinations
         for i in range(1,num_rolls+1): 
             average= make_averaged(roll_dice,num_samples)(i,dice)
+        
+        # checks if the average is the greatest average. Returns the optimum number of rolls
         if average> current_max_average: 
             current_max_average= average
             max_num_rolls=num_rolls
@@ -318,13 +317,6 @@ def max_scoring_num_rolls(dice=six_sided, num_samples=1000):
         
     return max_num_rolls
     
-
-
-        
-
-
-
-
 def winner(strategy0, strategy1):
     """Return 0 if strategy0 wins against strategy1, and 1 otherwise."""
     score0, score1 = play(strategy0, strategy1)
@@ -363,21 +355,17 @@ def run_experiments():
 
     "*** You may add additional experiments as you wish ***"
 
-
- 
-
 # Strategies
-
-
 
 def bacon_strategy(score, opponent_score, margin=8, num_rolls=4):
     """This strategy rolls 0 dice if that gives at least MARGIN points, and
     rolls NUM_ROLLS otherwise.
     """
     # BEGIN PROBLEM 10
-    "*** REPLACE THIS LINE ***"
     bacon_score= free_bacon(opponent_score) 
     bacon_score= hogPrime(bacon_score)
+    
+    #checks if free_bacon score is greater than margin
     if bacon_score >= margin:
         return 0
     else: 
@@ -393,11 +381,12 @@ def swap_strategy(score, opponent_score, margin=8, num_rolls=4):
     rolls 0 dice if it gives at least MARGIN points. Otherwise, it rolls
     NUM_ROLLS.
     """
-    # BEGIN PROBLEM 11
-    "*** REPLACE THIS LINE ***"
     
-    zero_roll_point_gain= free_bacon(opponent_score) #bacon_strategy(score, opponent_score, margin, num_rolls)
+
+    zero_roll_point_gain= free_bacon(opponent_score)
     zero_roll_point_gain= hogPrime(zero_roll_point_gain)
+
+    #much like bacon_strategy except it also checks for beneficial swap 
     if zero_roll_point_gain >= margin or zero_roll_point_gain+ score == opponent_score/2:
         return 0
     else: 
@@ -407,61 +396,51 @@ def swap_strategy(score, opponent_score, margin=8, num_rolls=4):
 
 check_strategy(swap_strategy)
 
-#def calc_chances(score, opponent_score):
-    #six_score= max_scoring_num_rolls(dice=six_sided, num_samples=100)
-    #four_score= max_scoring_num_rolls(dice=four_sided, num_samples=100)
-    #if six_score
-
 def final_strategy(score, opponent_score):
     """Write a brief description of your final strategy.
     pls forgive me. I wish I could say that there was sufficient reasoning for some of these conditional statements.  
-    Unfortunately, wishes don't always come true.  
+    Unfortunately, a good majority of these are just me praying that a conditional statement will bring up the average 
     *** YOUR DESCRIPTION HERE ***
     """
-    # BEGIN PROBLEM 11
-    "*** REPLACE THIS LINE ***"
-    
     bacon_score= free_bacon(opponent_score) 
     bacon_score= hogPrime(bacon_score)
     score_diff= abs(opponent_score-score)
 
 
-
+    #can't divide by a score of 0 
     if opponent_score !=0 : 
         swine_swap_score_needed= opponent_score/2 -score 
     else: 
         swine_swap_score_needed= 0
 
 
-
+    # try to force a four sided die right off the bat 
     if score<=5 and opponent_score<=5:
         return always_roll(2)(score, opponent_score)
-    elif score<opponent_score and  swine_swap_score_needed>=bacon_score:
+    # if you can incure a beneficial swap or greater with bacon score, then go for it bro 
+    elif score<opponent_score and  ((swine_swap_score_needed>=bacon_score) or (score_diff >= 19 and (bacon_score==4))):
         return 0
-    elif score> opponent_score and bacon_score==8: 
-        return 0
+    # Somewhat random. but the number put into always_roll is based on the average score you would incur from rolling that many six-sided die.  
     elif score< opponent_score and (swine_swap_score_needed==3 or swine_swap_score_needed==5 ): 
         return always_roll(1)(score,opponent_score)
     elif score< opponent_score and (swine_swap_score_needed== 4 or swine_swap_score_needed==7 or swine_swap_score_needed==6 or swine_swap_score_needed ==8):
         return always_roll(2)(score, opponent_score)
     elif score< opponent_score and (swine_swap_score_needed==2 ): 
         return always_roll(7)(score, opponent_score)
-    elif score< opponent_score and score_diff >= 19 and (bacon_score==4):
-        return 0
+    
+    # If you only need 1, try rolling a 10 die. You're almost guaranteed to get a 1
     elif score ==99 or (swine_swap_score_needed==1 and score<opponent_score): 
         return always_roll(10)(score,opponent_score)
+    # play conservatively if you're way in the lead 
     elif score>=90 and opponent_score >= 53:
         return 0
+    # if things are looking bad, take risks because what is life without gambles
     elif score< opponent_score and opponent_score- score>=20 : 
        return swap_strategy(score, opponent_score, margin=9, num_rolls=5)
-    
+    # play conservatively otherwise
     else: 
         return swap_strategy(score,opponent_score, margin= 7, num_rolls=4)
 check_strategy(final_strategy)
-
-
-
-
 
 ##########################
 # Command Line Interface #

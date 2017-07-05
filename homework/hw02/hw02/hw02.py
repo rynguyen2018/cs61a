@@ -34,6 +34,7 @@ def summation(n, term):
     55
     """
     "*** YOUR CODE HERE ***"
+
     k=1 
     total=0
     while k<=n:
@@ -60,7 +61,9 @@ def product(n, term):
     k=1 
     total=1
     while k<=n:
+        #print(term)
         total =total* term(k)
+        #print(total)
         k+=1
     return total
 
@@ -111,9 +114,7 @@ def accumulate(combiner, base, n, term):
     """
     "*** YOUR CODE HERE ***"
     def summ(combiner,n,term):
-        if n==0:
-            return 
-        if n==1:
+        if n==1 or n==0:
             return term(n)
         else: 
             return combiner(term(n),summ(combiner,n-1,term))
@@ -148,8 +149,8 @@ def product_using_accumulate(n, term):
     ...       ['Recursion', 'For', 'While'])
     True
     """
-    "*** YOUR CODE HERE ***"
-    return accumulate(product, 1, n, term)
+    
+    return accumulate(mul, 1, n, term)
 
 def filtered_accumulate(combiner, base, pred, n, term):
     """Return the result of combining the terms in a sequence of N terms
@@ -174,8 +175,20 @@ def filtered_accumulate(combiner, base, pred, n, term):
     ...       ['While', 'For', 'Recursion'])
     True
     """
+
+
     def combine_if(x, y):
-        "*** YOUR CODE HERE ***"
+        #print(x,y)
+        if pred(x)==True and pred(y)==True or pred(x)==True and pred(y-1)==True:
+            return combiner(x,y)
+        elif (pred(x)==True and pred(y)==False) or (pred(x-1)==True and x>0): 
+            return x
+        elif (pred(x)==False and pred(y)==True) or (pred(y-1)==True and y>0):
+            return y 
+        else:
+            return x
+
+
     return accumulate(combine_if, base, n, term)
 
 def odd(x):
@@ -186,7 +199,6 @@ def greater_than_5(x):
 
 def repeated(f, n):
     """Return the function that computes the nth application of f.
-
     >>> add_three = repeated(increment, 3)
     >>> add_three(5)
     8
@@ -200,6 +212,16 @@ def repeated(f, n):
     5
     """
     "*** YOUR CODE HERE ***"
+    def func(num):
+        if n==0: 
+            return num
+        if n==1: 
+            return f(num)
+        else: 
+            return f(repeated(f, n-1)(num))
+        return total 
+    return func
+
 
 def compose1(f, g):
     """Return a function h, such that h(x) = f(g(x))."""
