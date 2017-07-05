@@ -141,23 +141,31 @@ def count_change(amount):
 	9828
 	"""
 	"*** YOUR CODE HERE ***"
+	
+	# counts how many coins are available 
 	coins=0
 	for i in range(0, amount):
 		if 2**i <=amount:
 			coins+=1 
 		else:
 			break
-	#print(coins) 
-	if amount<0:
-		return 0
-	# corresponds to minimum number of coins
-	if amount ==0 or amount ==1:
-		return 1
-	else: 
-		with_high_coin= count_change(amount-2 )#amount-2**(coins-1))
-		without_high_coin= count_change(amount-coins+1)
-	# return without_high_coin + with_high_coin
-	return with_high_coin +without_high_coin
+	def count_that_ish(amount, coins): 
+		# the problem can be broken down into two search spaces: one in which the highest coin is included and one in which it is not.  
+		# To remove any combinations that do not include the high coin, subtract the 2**(amount of coins there are) from the amount desired
+		# To remove the high coin, simply decrease the number of coins in partition counting
+
+		if amount<0:
+			return 0
+		# corresponds to minimum number of coins
+		if amount ==0 or amount ==1:
+			return 1
+		if coins==0:
+			return 1
+		else: 
+			with_high_coin= count_that_ish(amount-2**coins, coins)
+			without_high_coin= count_that_ish(amount, coins-1)
+			return with_high_coin +without_high_coin
+	return count_that_ish(amount, coins)
 
 def print_move(origin, destination):
 	"""Print instructions to move a disk."""
@@ -200,8 +208,6 @@ def move_stack(n, start, end):
 		move_stack(1,start, end)
 		move_stack(n-1, middle_peg, end)
 
-	#
-
 def flatten(lst):
 	"""Returns a flattened version of lst.
 
@@ -216,12 +222,23 @@ def flatten(lst):
 	"""
 	"*** YOUR CODE HERE ***"
 	flat_list=[]
-	if type(lst[0])!=list: 
-		flat_list= [lst[0]]+ flat_list
-	else:
-		flat_list= int(lst[0][0])
-		#	return int(lst[0])		 
+	if len(lst)==0: 
+		flat_list+= []
+	elif type(lst[0])==list: 
+		flat_list+= flatten(lst[0]) + flatten(lst[1:]) 
+	elif type(lst[0])!=list:
+		flat_list+=[lst[0]] + flatten(lst[1:])
 
+	# flat_list=[]
+	# if len(lst)!=0 and type(lst[0])!=list: 
+	# 	flat_list+= [lst[0]] + flatten(lst[1:])
+	# elif len(lst)!=0 and type(lst[0])==list: 
+	# 	flat_list+= [lst[0][0]] + flatten(lst[0][1:])
+		#flatten(lst[0:])
+	# 	flat_list+= flatten(lst[0])		 
+	# elif len(lst)!=0 and type(lst[0])==list : 
+	# 	flat_list+= [lst[0][0]] + flatten(lst[1:])
+	return flat_list
 
 def merge(lst1, lst2):
 	"""Merges two sorted lists.
@@ -239,11 +256,20 @@ def merge(lst1, lst2):
 	#combine_list= lst1 +lst2 
 	#def sorted(lst1,lst2):
 	sorted_list=[]
-	if lst1!= [] and lst2 !=[]:
+	if lst1==[] and lst2==[]: 
+		sorted_list+=[]
+	elif lst1==[] and lst2 !=[]:
+		sorted_list+= lst2
+	elif lst1!= [] and lst2 ==[]:
+		sorted_list+= lst1
+	elif lst1!= [] and lst2 !=[]:
 		if lst1[0]>lst2[0]:
-			lst1[0],lst2[0]= lst2[0],lst1[0]
-		return sorted_list + [lst1[0]]+ merge(lst1[1:],lst2)
-	return lst1 + lst2
+			sorted_list+= [lst2[0]] + merge(lst1,lst2[1:])
+		if lst1[0]< lst2[0]:
+			sorted_list+= [lst1[0]]+ merge(lst1[1:],lst2)
+		if lst1[0]== lst2[0]:
+			sorted_list+= [lst1[0]]+ [lst2[0]]+merge(lst1[1:],lst2[1:])
+	return sorted_list#lst1 + lst2
 def mergesort(seq):
 	"""Mergesort algorithm.
 
@@ -254,4 +280,18 @@ def mergesort(seq):
 	>>> mergesort([1])   # sorting a one-element list
 	[1]
 	"""
+	sorted_list= []
 	"*** YOUR CODE HERE ***"
+	if len(seq)==0 :
+		sorted_list+= []
+	elif len(seq)==1:
+		sorted_list+= [seq[0]]
+	elif len(seq)==2:
+		sorted_list+= merge([seq[0]],[seq[1]])
+	else: 
+		chunk1= seq[len(seq)//2:]
+		chunk2= seq[:len(seq)//2]
+		temp_list1= mergesort(chunk1)
+		temp_list2= mergesort(chunk2)
+		sorted_list= merge(temp_list1, temp_list2)
+	return sorted_list
