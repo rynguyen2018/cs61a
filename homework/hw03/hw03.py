@@ -1,5 +1,6 @@
 HW_SOURCE_FILE = 'hw03.py'
-
+from math import sqrt
+import sys
 #############
 # Questions #
 #############
@@ -117,15 +118,15 @@ def pingpong(n):
 	# return num
 
 
-	def helper1(num, change_direction):
+	def helper1(num, change_direction, result):
 		
-		if num<=7:
-			return num, change_direction
-		elif (num-1)%7==0 or has_seven(num-1): 	
-			return helper1(num-1, change_direction)[0]+ helper1(num-1, change_direction)[1]*-1, helper1(num-1, change_direction)[1]*-1
+		if num==n:
+			return result+ change_direction
+		elif (num)%7==0 or has_seven(num): 	
+			return helper1(num+1, change_direction*-1, result + change_direction) #helper1(num-1, change_direction)[0]+ helper1(num-1, change_direction)[1]*-1, helper1(num-1, change_direction)[1]*-1
 		else: 
-			return helper1(num-1, change_direction)[0]+ helper1(num-1, change_direction)[1], helper1(num-1, change_direction)[1]
-	return helper1(n, 1)[0]
+			return helper1(num+1, change_direction,result + change_direction) #helper1(num-1, change_direction)[0]+ helper1(num-1, change_direction)[1], helper1(num-1, change_direction)[1]
+	return helper1(1, 1,0)
 
 
 def count_change(amount):
@@ -144,8 +145,8 @@ def count_change(amount):
 	
 	# counts how many coins are available 
 	coins=0
-	for i in range(0, amount):
-		if 2**i <=amount:
+	for i in range(0, round(sqrt(amount))):
+		if 2**i <amount:
 			coins+=1 
 		else:
 			break
