@@ -172,8 +172,7 @@ def find(t, target):
         for b in branches(t):
             truth_list.append(find(b, target))
         for val in truth_list:
-            if val ==True:
-                return True
+            return val ==True
     return False
 
     #else:
