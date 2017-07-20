@@ -158,11 +158,21 @@ def rate_all(user, restaurants, feature_fns):
     restaurants -- A list of restaurants
     feature_fns -- A sequence of feature functions
     """
+    rating_dict={}
     predictor = best_predictor(user, ALL_RESTAURANTS, feature_fns)
     reviewed = user_reviewed_restaurants(user, restaurants)
     # BEGIN Question 9
     "*** REPLACE THIS LINE ***"
     # END Question 9
+
+    for restaurant in restaurants:
+    	if restaurant in reviewed:
+    		rating_dict[restaurant_name(restaurant)]= user_rating(user, restaurant_name(restaurant))
+    	else: 
+    		rating_dict[restaurant_name(restaurant)]= predictor(restaurant)
+    return rating_dict
+
+
 
 
 def search(query, restaurants):
@@ -175,7 +185,7 @@ def search(query, restaurants):
     # BEGIN Question 10
     "*** REPLACE THIS LINE ***"
     # END Question 10
-
+    return [restaurant for restaurant in restaurants for category in restaurant_categories(restaurant) if category==query] 
 
 def feature_set():
     """Return a sequence of feature functions."""
@@ -186,57 +196,57 @@ def feature_set():
             lambda r: restaurant_location(r)[1]]
 
 
-# @main
-# def main(*args):
-#     import argparse
-#     parser = argparse.ArgumentParser(
-#         description='Run Recommendations',
-#         formatter_class=argparse.RawTextHelpFormatter
-#     )
-#     parser.add_argument('-u', '--user', type=str, choices=USER_FILES,
-#                         default='test_user',
-#                         metavar='USER',
-#                         help='user file, e.g.\n' +
-#                         '{{{}}}'.format(','.join(sample(USER_FILES, 3))))
-#     parser.add_argument('-k', '--k', type=int, help='for k-means')
-#     parser.add_argument('-q', '--query', choices=CATEGORIES,
-#                         metavar='QUERY',
-#                         help='search for restaurants by category e.g.\n'
-#                         '{{{}}}'.format(','.join(sample(CATEGORIES, 3))))
-#     parser.add_argument('-p', '--predict', action='store_true',
-#                         help='predict ratings for all restaurants')
-#     parser.add_argument('-r', '--restaurants', action='store_true',
-#                         help='outputs a list of restaurant names')
-#     args = parser.parse_args()
+@main
+def main(*args):
+    import argparse
+    parser = argparse.ArgumentParser(
+        description='Run Recommendations',
+        formatter_class=argparse.RawTextHelpFormatter
+    )
+    parser.add_argument('-u', '--user', type=str, choices=USER_FILES,
+                        default='test_user',
+                        metavar='USER',
+                        help='user file, e.g.\n' +
+                        '{{{}}}'.format(','.join(sample(USER_FILES, 3))))
+    parser.add_argument('-k', '--k', type=int, help='for k-means')
+    parser.add_argument('-q', '--query', choices=CATEGORIES,
+                        metavar='QUERY',
+                        help='search for restaurants by category e.g.\n'
+                        '{{{}}}'.format(','.join(sample(CATEGORIES, 3))))
+    parser.add_argument('-p', '--predict', action='store_true',
+                        help='predict ratings for all restaurants')
+    parser.add_argument('-r', '--restaurants', action='store_true',
+                        help='outputs a list of restaurant names')
+    args = parser.parse_args()
 
-#     # Output a list of restaurant names
-#     if args.restaurants:
-#         print('Restaurant names:')
-#         for restaurant in sorted(ALL_RESTAURANTS, key=restaurant_name):
-#             print(repr(restaurant_name(restaurant)))
-#         exit(0)
+    # Output a list of restaurant names
+    if args.restaurants:
+        print('Restaurant names:')
+        for restaurant in sorted(ALL_RESTAURANTS, key=restaurant_name):
+            print(repr(restaurant_name(restaurant)))
+        exit(0)
 
-#     # Select restaurants using a category query
-#     if args.query:
-#         restaurants = search(args.query, ALL_RESTAURANTS)
-#     else:
-#         restaurants = ALL_RESTAURANTS
+    # Select restaurants using a category query
+    if args.query:
+        restaurants = search(args.query, ALL_RESTAURANTS)
+    else:
+        restaurants = ALL_RESTAURANTS
 
-#     # Load a user
-#     assert args.user, 'A --user is required to draw a map'
-#     user = load_user_file('{}.dat'.format(args.user))
+    # Load a user
+    assert args.user, 'A --user is required to draw a map'
+    user = load_user_file('{}.dat'.format(args.user))
 
-#     # Collect ratings
-#     if args.predict:
-#         ratings = rate_all(user, restaurants, feature_set())
-#     else:
-#         restaurants = user_reviewed_restaurants(user, restaurants)
-#         names = [restaurant_name(r) for r in restaurants]
-#         ratings = {name: user_rating(user, name) for name in names}
+    # Collect ratings
+    if args.predict:
+        ratings = rate_all(user, restaurants, feature_set())
+    else:
+        restaurants = user_reviewed_restaurants(user, restaurants)
+        names = [restaurant_name(r) for r in restaurants]
+        ratings = {name: user_rating(user, name) for name in names}
 
-#     # Draw the visualization
-#     if args.k:
-#         centroids = k_means(restaurants, min(args.k, len(restaurants)))
-#     else:
-#         centroids = [restaurant_location(r) for r in restaurants]
-#     draw_map(centroids, restaurants, ratings)
+    # Draw the visualization
+    if args.k:
+        centroids = k_means(restaurants, min(args.k, len(restaurants)))
+    else:
+        centroids = [restaurant_location(r) for r in restaurants]
+    draw_map(centroids, restaurants, ratings)

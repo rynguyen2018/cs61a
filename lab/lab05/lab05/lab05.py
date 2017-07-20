@@ -174,6 +174,3 @@ def find(t, target):
         for val in truth_list:
             return val ==True
     return False
-
-    #else:
-    #   return False

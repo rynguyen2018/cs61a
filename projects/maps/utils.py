@@ -17,11 +17,7 @@ def map_and_filter(s, map_fn, filter_fn):
     """
     # BEGIN Question 0
     "*** REPLACE THIS LINE ***"
-    #for element in s: 
-    #    if filter_fn(map_fn(element)): 
-    #        x.append(map_fn(element)) 
-    return [map_fn(element) for element in s if filter_fn(element)] #if filter_fn(element)]
-    # END Question 0
+    return [map_fn(element) for element in s if filter_fn(element)] 
 
 def key_of_min_value(d):
     """Returns the key in a dict d that corresponds to the minimum value of d.
