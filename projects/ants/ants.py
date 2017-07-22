@@ -44,10 +44,19 @@ class Place(object):
             if self.ant is None:
                 self.ant = insect
             else:
-                # Phase 6: Special handling for BodyguardAnt
+                
+                # Phase 6: Special handling  BodyguardAnt
                 # BEGIN Problem 11
-                "*** REPLACE THIS LINE ***"
-                assert self.ant is None, 'Two ants in {0}'.format(self)
+                if self.ant.container and self.ant.can_contain(insect):#(((insect.container and not self.ant.container) and insect.can_contain(self.ant)) or ((self.ant.container and not insect.container) and self.ant.can_contain(insect))) :
+                    self.ant = self.ant
+                    self.ant.contain_ant(insect)
+                elif insect.container and insect.can_contain(self.ant):
+                    insect.contain_ant(self.ant)
+                    self.ant= insect
+                    
+
+                else:
+                    assert self.ant is None, 'Two ants in {0}'.format(self)
                 # END Problem 11
         else:
             self.bees.append(insect)
@@ -140,7 +149,7 @@ class Bee(Insect):
         # Phase 4: Special handling for NinjaAnt
         # BEGIN Problem 8
         "*** REPLACE THIS LINE ***"
-        return self.place.ant is not None
+        return self.place.ant is not None and self.place.ant.block_path 
         # END Problem 8
 
     def action(self, colony):
@@ -159,13 +168,24 @@ class Ant(Insect):
     """An Ant occupies a place and does work for the colony."""
 
     is_ant = True
-    implemented = False  # Only implemented Ant classes should be instantiated
+    implemented = False # Only implemented Ant classes should be instantiated
     food_cost = 2
-
+    block_path= True 
+    container= False
+    ant = None 
     def __init__(self, armor=1):
         """Create an Ant with an ARMOR quantity."""
         Insect.__init__(self, armor)
+        
+    def can_contain(self, other):
+        return self.container and self.ant is None and not other.container
 
+class WallAnt(Ant): 
+    name= 'Wall'
+    implemented=True
+    food_cost=4 
+    def __init__(self, armor=4):
+        super().__init__(armor)
 
 
 class HarvesterAnt(Ant):
@@ -281,7 +301,7 @@ class FireAnt(Ant):
             copy_bee_list= bee_list[:]
             for i in range(0, len(bee_list)):
                 copy_bee_list[i].reduce_armor(self.damage)
-            bee_list= [copy_bee_list[bee] for bee in range(0, len(copy_bee_list)) if copy_bee_list[bee].armor >0]
+            bee_list= copy_bee_list#[copy_bee_list[bee] for bee in range(0, len(copy_bee_list)) if copy_bee_list[bee].armor >0]
             self.place.remove_insect(self)
 
 class LongThrower(ThrowerAnt):
@@ -323,23 +343,27 @@ class ShortThrower(ThrowerAnt):
 class NinjaAnt(Ant):
     """NinjaAnt does not block the path and damages all bees in its place."""
 
-    name = 'Ninja'
-    damage = 1
-    # BEGIN Problem 8
-    "*** REPLACE THIS LINE ***"
-    implemented = False   # Change to True to view in the GUI
-    # END Problem 8
-
-    def action(self, colony):
-        # BEGIN Problem 8
-        "*** REPLACE THIS LINE ***"
-        # END Problem 8
+    name= 'Ninja'
+    food_cost = 5 
+    implemented=True
+    damage= 1
+    block_path = False
+    
 
 
-# BEGIN Problem 9
-"*** REPLACE THIS LINE ***"
-# The ScubaThrower class
-# END Problem 9
+    def action(self, colony): 
+        bee_list= self.place.bees
+        copy_bee_list= bee_list[:]
+        for i in range(0, len(bee_list)):
+            copy_bee_list[i].reduce_armor(self.damage)
+        bee_list= copy_bee_list
+
+class ScubaThrower(ThrowerAnt):
+    name= 'Scuba'
+    implemented =True 
+    watersafe= True 
+    food_cost= 6
+    damage =1 
 
 
 class HungryAnt(Ant):
@@ -351,22 +375,37 @@ class HungryAnt(Ant):
     "*** REPLACE THIS LINE ***"
     implemented = False   # Change to True to view in the GUI
     # END Problem 10
-
+    time_to_digest= 3
+    food_cost= 4
     def __init__(self):
-        # BEGIN Problem 10
-        "*** REPLACE THIS LINE ***"
-        # END Problem 10
+        super().__init__()
+        self.digesting=0 
+        self.has_bee=False
 
     def eat_bee(self, bee):
         # BEGIN Problem 10
         "*** REPLACE THIS LINE ***"
         # END Problem 10
+        bee.reduce_armor(bee.armor)
 
     def action(self, colony):
         # BEGIN Problem 10
         "*** REPLACE THIS LINE ***"
         # END Problem 10
-
+        if self.digesting==0 and len(self.place.bees)>0 and not self.has_bee: 
+            #self.eat_bee(random_or_none(self.place.bees))
+            #self.digesting+=1 
+    
+            copy_bee_list= self.place.bees[:]
+            for bee in range(0, len(self.place.bees)): 
+                self.eat_bee(copy_bee_list[bee])
+            self.place.bee=copy_bee_list
+            self.has_bee=True
+        elif self.has_bee:
+            self.digesting+=1 
+            if self.digesting== self.time_to_digest:
+                self.has_bee=False
+                self.digesting=0
 
 class BodyguardAnt(Ant):
     """BodyguardAnt provides protection to other Ants."""
@@ -375,6 +414,8 @@ class BodyguardAnt(Ant):
     "*** REPLACE THIS LINE ***"
     implemented = False   # Change to True to view in the GUI
     # END Problem 11
+    container= True 
+    food_cost= 4
 
     def __init__(self):
         Ant.__init__(self, 2)
@@ -384,8 +425,10 @@ class BodyguardAnt(Ant):
         # BEGIN Problem 11
         "*** REPLACE THIS LINE ***"
         # END Problem 11
-
+        self.ant= ant 
     def action(self, colony):
+        if self.ant is not None: 
+            self.ant.action(colony)
         # BEGIN Problem 11
         "*** REPLACE THIS LINE ***"
         # END Problem 11
@@ -398,11 +441,18 @@ class TankAnt(BodyguardAnt):
     "*** REPLACE THIS LINE ***"
     implemented = False   # Change to True to view in the GUI
     # END Problem 12
+    food_cost= 6
 
     def action(self, colony):
         # BEGIN Problem 12
         "*** REPLACE THIS LINE ***"
         # END Problem 12
+        bee_list= self.place.bees
+        copy_bee_list= bee_list[:]
+        for i in range(0, len(bee_list)):
+            copy_bee_list[i].reduce_armor(self.damage)
+        bee_list= copy_bee_list
+        super().action(colony)
 
 class QueenAnt(Ant):  # You should change this line
     """The Queen of the colony. The game is over if a bee enters her place."""
