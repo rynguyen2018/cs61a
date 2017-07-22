@@ -47,14 +47,12 @@ class Place(object):
                 
                 # Phase 6: Special handling  BodyguardAnt
                 # BEGIN Problem 11
-                if self.ant.container and self.ant.can_contain(insect):#(((insect.container and not self.ant.container) and insect.can_contain(self.ant)) or ((self.ant.container and not insect.container) and self.ant.can_contain(insect))) :
+                if self.ant.container and self.ant.can_contain(insect):
                     self.ant = self.ant
                     self.ant.contain_ant(insect)
                 elif insect.container and insect.can_contain(self.ant):
                     insect.contain_ant(self.ant)
                     self.ant= insect
-                    
-
                 else:
                     assert self.ant is None, 'Two ants in {0}'.format(self)
                 # END Problem 11
@@ -78,16 +76,23 @@ class Place(object):
                 if hasattr(self.ant, 'container') and self.ant.container:
                     self.ant = self.ant.ant
                 else:
-                    self.ant = None
+                    if self.ant.name != 'Queen' or (isinstance(self.ant,QueenAnt) and self.ant.is_imposter): 
+                        self.ant = None
+                        insect.place = None 
+
             else:
-                if hasattr(self.ant, 'container') and self.ant.container and self.ant.ant is insect:
-                    self.ant.ant = None
+                if hasattr(self.ant, 'container') and self.ant.container and self.ant.ant is insect: 
+                    if self.ant.ant.name == 'Queen' and not self.ant.ant.is_imposter:
+                        self.ant.ant= insect
+                    else:
+                        self.ant.ant = None
+                        insect.place = None
+                    
                 else:
                     assert False, '{0} is not in {1}'.format(insect, self)
         else:
             self.bees.remove(insect)
-
-        insect.place = None
+            insect.place ==None 
 
     def __str__(self):
         return self.name
@@ -363,7 +368,7 @@ class ScubaThrower(ThrowerAnt):
     implemented =True 
     watersafe= True 
     food_cost= 6
-    damage =1 
+    damage =1
 
 
 class HungryAnt(Ant):
@@ -416,7 +421,7 @@ class BodyguardAnt(Ant):
     # END Problem 11
     container= True 
     food_cost= 4
-
+    damage=0 
     def __init__(self):
         Ant.__init__(self, 2)
         self.ant = None  # The Ant hidden in this bodyguard
@@ -454,26 +459,57 @@ class TankAnt(BodyguardAnt):
         bee_list= copy_bee_list
         super().action(colony)
 
-class QueenAnt(Ant):  # You should change this line
+class QueenAnt(ScubaThrower):  # You should change this line
     """The Queen of the colony. The game is over if a bee enters her place."""
 
     name = 'Queen'
-    # BEGIN Problem 13
-    "*** REPLACE THIS LINE ***"
-    implemented = False   # Change to True to view in the GUI
-    # END Problem 13
+    implemented = True   # Change to True to view in the GUI
+    food_cost=7
+    double_list=[]
+    count=0 
 
     def __init__(self):
-        # BEGIN Problem 13
-        "*** REPLACE THIS LINE ***"
-        # END Problem 13
 
+        super().__init__()
+
+        if QueenAnt.count==0: 
+            self.is_imposter= False 
+            QueenAnt.count+=1 
+            self.has_doubled= False 
+        else: 
+            self.is_imposter=True 
     def action(self, colony):
+        if self.is_imposter:
+            self.reduce_armor(self.armor)
+        else: 
+            #if not self.has_doubled:
+            holder= self.place
+            if isinstance(holder.ant, TankAnt) and holder.ant not in QueenAnt.double_list:
+               holder.ant.damage*=2
+               QueenAnt.double_list.append(holder.ant)
+            holder= holder.exit
+            while holder is not None:
+                if holder.ant not in QueenAnt.double_list and hasattr(holder.ant, 'damage'): 
+                    if isinstance(holder.ant, BodyguardAnt) and holder.ant.ant != None and holder.ant.ant not in QueenAnt.double_list: 
+                        if isinstance(holder.ant, TankAnt) and holder.ant not in QueenAnt.double_list: 
+                            holder.ant.damage*=2
+                        holder.ant.ant.damage *= 2 
+                        QueenAnt.double_list.append(holder.ant.ant)
+                    else: 
+                        holder.ant.damage*=2
+                    QueenAnt.double_list.append(holder.ant)
+                 
+                elif holder.ant in QueenAnt.double_list and isinstance(holder.ant, BodyguardAnt) and holder.ant.ant != None and holder.ant.ant not in QueenAnt.double_list:
+                    holder.ant.ant.damage*=2 
+                    QueenAnt.double_list.append(holder.ant.ant) 
+                holder= holder.exit
+            super().action(colony)
+        
         """A queen ant throws a leaf, but also doubles the damage of ants
         in her tunnel.
 
         Impostor queens do only one thing: reduce their own armor to 0.
-        """
+        """ 
         # BEGIN Problem 13
         "*** REPLACE THIS LINE ***"
         # END Problem 13
@@ -485,6 +521,11 @@ class QueenAnt(Ant):  # You should change this line
         # BEGIN Problem 13
         "*** REPLACE THIS LINE ***"
         # END Problem 13
+        self.armor-= amount 
+        if self.armor <=0 and not self.is_imposter:
+            bees_win()
+        elif self.armor <=0 and self.is_imposter:
+            self.place.remove_insect(self)
 
 class AntRemover(Ant):
     """Allows the player to remove ants from the board in the GUI."""
