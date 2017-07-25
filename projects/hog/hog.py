@@ -19,7 +19,7 @@ def roll_dice(num_rolls, dice=six_sided):
             pigout=True 
             total=1
         elif pigout == False:
-            total+=outcome  
+            total += outcome  
     return total
 
 def free_bacon(opponent_score):
@@ -27,7 +27,7 @@ def free_bacon(opponent_score):
     # BEGIN PROBLEM 2
 
     # an opponent with a score less than 10 will result in a bacon score equal to the opponent score +1 
-    if opponent_score< 10 : 
+    if opponent_score < 10 : 
         score = opponent_score+1
     else: 
         #otherwise, we just take the max of the digits and add 1
@@ -44,7 +44,7 @@ def isPrime(score):
     if score == 1: 
         return False
     # goes through all integers through the square root of the score (shoutout to Rocky for this efficient way of going through primes)
-    while n*n<= score: 
+    while n*n <= score: 
         if score%n  == 0: 
             return False 
         n += 1      
@@ -60,7 +60,7 @@ def hogPrime(score):
     return score
 
 
-def take_turn(num_rolls, opponent_score, dice=six_sided):
+def take_turn(num_rolls, opponent_score, dice = six_sided):
     """Simulate a turn rolling NUM_ROLLS dice, which may be 0 (Free Bacon).
     Return the points scored for the turn by the current player. Also
     implements the Hogtimus Prime rule.
@@ -136,7 +136,7 @@ def other(player):
     return 1 - player
 
 
-def play(strategy0, strategy1, score0=0, score1=0, goal=GOAL_SCORE):
+def play(strategy0, strategy1, score0 = 0, score1 = 0, goal = GOAL_SCORE):
     """Simulate a game and return the final scores of both players, with Player
     0's score first, and Player 1's score second.
 
@@ -151,19 +151,19 @@ def play(strategy0, strategy1, score0=0, score1=0, goal=GOAL_SCORE):
     """
     player = 0  # Which player is about to take a turn, 0 (first) or 1 (second)
     dice_swapped = False # Whether 4-sided dice have been swapped for 6-sided
-    current_dice= six_sided
+    current_dice = six_sided
 
     # BEGIN PROBLEM 6
     # runs simulation while goal has not been reached
-    while score0<goal and score1<goal:
+    while score0 < goal and score1 < goal:
         if player  == 0: 
-            player_score= score0
-            loop_strategy= strategy0(score0, score1)
-            opponent_score=score1 
+            player_score = score0
+            loop_strategy = strategy0(score0, score1)
+            opponent_score =score1 
         else: 
-            player_score= score1
-            loop_strategy= strategy1(score1, score0)
-            opponent_score=score0  
+            player_score = score1
+            loop_strategy = strategy1(score1, score0)
+            opponent_score =score0  
         # general operations for either player depending on whether player =0 or player =1. 
         
         # Score that you receive for a turn 
@@ -174,18 +174,18 @@ def play(strategy0, strategy1, score0=0, score1=0, goal=GOAL_SCORE):
         
         #Checks for perfect piggy rule
         if is_perfect_piggy(addition):
-            dice_swapped= not dice_swapped
-            current_dice= select_dice(dice_swapped)
+            dice_swapped = not dice_swapped
+            current_dice = select_dice(dice_swapped)
         
         if player  == 0: 
-            score0= player_score
-            player= other(player)
+            score0 = player_score
+            player = other(player)
         else: 
-            score1= player_score
-            player= other(player)
+            score1 = player_score
+            player = other(player)
         #swaps scores if necessary
         if is_swap(score0, score1):
-            score0,score1= score1, score0 
+            score0,score1 = score1, score0 
     return score0, score1
 
 
@@ -234,7 +234,7 @@ def check_strategy_roll(score, opponent_score, num_rolls):
     assert type(num_rolls) == int, msg + ' (not an integer)'
     assert 0 <= num_rolls <= 10, msg + ' (invalid number of rolls)'
 
-def check_strategy(strategy, goal=GOAL_SCORE):
+def check_strategy(strategy, goal = GOAL_SCORE):
     """Checks the strategy with all valid inputs and verifies that the strategy
     returns a valid input. Use `check_strategy_roll` to raise an error with a
     helpful message if the strategy returns an invalid output.
@@ -268,7 +268,7 @@ def check_strategy(strategy, goal=GOAL_SCORE):
 
 # Experiments
 
-def make_averaged(fn, num_samples=1000):
+def make_averaged(fn, num_samples = 1000):
     """Return a function that returns the average_value of FN when called.
 
     To implement this function, you will have to use *args syntax, a new Python
@@ -281,14 +281,14 @@ def make_averaged(fn, num_samples=1000):
     """
     #gets average of function over num_samples 
     def average(*args): 
-        total =0  
+        total = 0  
         for i in range(num_samples):
-            function_call= fn(*args)
-            total+= function_call
+            function_call = fn(*args)
+            total += function_call
         return total/num_samples
     return average 
 
-def max_scoring_num_rolls(dice=six_sided, num_samples=1000):
+def max_scoring_num_rolls(dice = six_sided, num_samples=1000):
     """Return the number of dice (1 to 10) that gives the highest average turn
     score by calling roll_dice with the provided DICE over NUM_SAMPLES times.
     Assume that the dice always return positive outcomes.
@@ -297,22 +297,21 @@ def max_scoring_num_rolls(dice=six_sided, num_samples=1000):
     >>> max_scoring_num_rolls(dice)
     1
     """
-    max_num_rolls=0
-    current_max_average= 0
+    max_num_rolls = 0
+    current_max_average = 0
     num_rolls=1 
-
+    func= make_averaged(roll_dice, num_samples)
     #iterates through rolling dice 1-10 times
     while num_rolls <= 10:
         average = 0  
         # makes average for all possible rolling dice combinations
-        for i in range(1,num_rolls+1): 
-            average = make_averaged(roll_dice,num_samples)(i,dice)
-        
+        average = func(num_rolls, dice)
+
         # checks if the average is the greatest average. Returns the optimum number of rolls
-        if average> current_max_average: 
+        if average > current_max_average: 
             current_max_average = average
             max_num_rolls = num_rolls
-        num_rolls+=1
+        num_rolls += 1
         
     return max_num_rolls
     
@@ -356,13 +355,13 @@ def run_experiments():
 
 # Strategies
 
-def bacon_strategy(score, opponent_score, margin=8, num_rolls=4):
+def bacon_strategy(score, opponent_score, margin = 8, num_rolls = 4):
     """This strategy rolls 0 dice if that gives at least MARGIN points, and
     rolls NUM_ROLLS otherwise.
     """
     # BEGIN PROBLEM 10
-    bacon_score= free_bacon(opponent_score) 
-    bacon_score= hogPrime(bacon_score)
+    bacon_score = free_bacon(opponent_score) 
+    bacon_score = hogPrime(bacon_score)
     
     #checks if free_bacon score is greater than margin
     if bacon_score >= margin:
@@ -375,18 +374,18 @@ def bacon_strategy(score, opponent_score, margin=8, num_rolls=4):
 check_strategy(bacon_strategy)
 
 
-def swap_strategy(score, opponent_score, margin=8, num_rolls=4):
+def swap_strategy(score, opponent_score, margin = 8, num_rolls = 4):
     """This strategy rolls 0 dice when it triggers a beneficial swap. It also
     rolls 0 dice if it gives at least MARGIN points. Otherwise, it rolls
     NUM_ROLLS.
     """
     
 
-    zero_roll_point_gain= free_bacon(opponent_score)
-    zero_roll_point_gain= hogPrime(zero_roll_point_gain)
+    zero_roll_point_gain = free_bacon(opponent_score)
+    zero_roll_point_gain = hogPrime(zero_roll_point_gain)
 
     #much like bacon_strategy except it also checks for beneficial swap 
-    if zero_roll_point_gain >= margin or zero_roll_point_gain+ score == opponent_score/2:
+    if zero_roll_point_gain >= margin or zero_roll_point_gain + score == opponent_score/2:
         return 0
     else: 
         return num_rolls

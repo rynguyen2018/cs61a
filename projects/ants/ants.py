@@ -75,25 +75,31 @@ class Place(object):
             if self.ant is insect:
                 if hasattr(self.ant, 'container') and self.ant.container:
                     self.ant = self.ant.ant
+
                 else:
-                    if self.ant.name != 'Queen' or (isinstance(self.ant,QueenAnt) and self.ant.is_imposter): 
+                    if not isinstance(self.ant, QueenAnt) or (isinstance(self.ant,QueenAnt) and self.ant.is_imposter): 
                         self.ant = None
                         insect.place = None 
 
             else:
-                if hasattr(self.ant, 'container') and self.ant.container and self.ant.ant is insect: 
-                    if self.ant.ant.name == 'Queen' and not self.ant.ant.is_imposter:
-                        self.ant.ant= insect
+                if hasattr(self.ant, 'container') and self.ant.container and self.ant.ant is insect:
+                    if isinstance(self.ant.ant,QueenAnt) :
+                        if self.ant.ant.is_imposter:
+                            self.ant.ant.place= None 
+                            self.ant.ant= None 
+
+
                     else:
-                        self.ant.ant = None
-                        insect.place = None
+                        self.ant.ant= None
+                        insect.place =None 
+                        self.ant.place= None
+
                     
                 else:
                     assert False, '{0} is not in {1}'.format(insect, self)
         else:
             self.bees.remove(insect)
-            insect.place ==None 
-
+            insect.place=None 
     def __str__(self):
         return self.name
 
@@ -549,6 +555,12 @@ def make_slow(action):
     # BEGIN Problem EC
     "*** REPLACE THIS LINE ***"
     # END Problem EC
+    def call_action(colony):
+        if colony.time %2==0: 
+            return action(colony)
+    return call_action
+    #bee.action= call_action
+
 
 def make_stun(action):
     """Return a new action method that does nothing.
@@ -559,12 +571,24 @@ def make_stun(action):
     "*** REPLACE THIS LINE ***"
     # END Problem EC
 
-def apply_effect(effect, bee, duration):
-    """Apply a status effect to a BEE that lasts for DURATION turns."""
-    # BEGIN Problem EC
-    "*** REPLACE THIS LINE ***"
-    # END Problem EC
+    def call_action(bee, colony):
+        return 
+    return make_stun
 
+def apply_effect(effect, bee, duration):
+    time=0 
+    """Apply a status effect to a BEE that lasts for DURATION turns."""
+    changed_action= effect(bee.action)
+    old_action= bee.action
+    def do_change(colony):
+        nonlocal duration
+        if time< duration: 
+            changed_action(colony)
+            
+        else: 
+            old_action(colony)
+        time+=1
+    bee.action= do_change
 
 class SlowThrower(ThrowerAnt):
     """ThrowerAnt that causes Slow on Bees."""
@@ -574,6 +598,8 @@ class SlowThrower(ThrowerAnt):
     "*** REPLACE THIS LINE ***"
     implemented = False   # Change to True to view in the GUI
     # END Problem EC
+    food_cost = 4
+    damage=0 
 
     def throw_at(self, target):
         if target:
@@ -588,11 +614,11 @@ class StunThrower(ThrowerAnt):
     "*** REPLACE THIS LINE ***"
     implemented = False   # Change to True to view in the GUI
     # END Problem EC
-
+    food_cost = 6
+    damage=0
     def throw_at(self, target):
         if target:
             apply_effect(make_stun, target, 1)
-
 
 ##################
 # Bees Extension #
