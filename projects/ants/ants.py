@@ -88,7 +88,6 @@ class Place(object):
                             self.ant.ant.place= None 
                             self.ant.ant= None 
 
-
                     else:
                         self.ant.ant= None
                         insect.place =None 

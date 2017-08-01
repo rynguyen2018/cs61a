@@ -237,6 +237,8 @@ def prune_min(t):
     "*** YOUR CODE HERE ***"
     if t.is_leaf: 
         return t 
+    else: 
+        return 
 def long_paths(tree, n):
     """Return a list all paths in tree with length at least n.
 
