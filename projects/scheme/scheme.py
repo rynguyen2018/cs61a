@@ -385,6 +385,12 @@ def scheme_call_cc(function, env):
     # BEGIN PROBLEM 21
     "*** REPLACE THIS LINE ***"
     # END PROBLEM 21
+    return scheme_eval(function.body.first.second.first, env)
+    #try: 
+    #   return scheme_eval(function,env)
+    #except ContinuationError:
+    #   return ContinuationProcedure()
+
 
 class ContinuationProcedure(Procedure):
     def __init__(self, error_class):
