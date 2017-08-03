@@ -99,7 +99,7 @@ circumference
 
 (square (square 3))
 ; expect 81
-(exit)
+
 (define (sum-of-squares x y)
   (+ (square x) (square y)))
 (sum-of-squares 3 4)

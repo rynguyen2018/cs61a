@@ -21,11 +21,11 @@ def find_closest(location, centroids):
     # BEGIN Question 3
     "*** REPLACE THIS LINE ***"
     # END Question 3
-    smallest_distance= min([distance(location, centroid) for centroid in centroids])
-    for x in centroids:
-        if distance(x,location)== smallest_distance:
-            return x
-
+    #smallest_distance= min([distance(location, centroid) for centroid in centroids])
+    #for x in centroids:
+    #    if distance(x,location)== smallest_distance:
+    #        return x
+    return min(centroids, key= lambda centroid: distance(location, centroid))
 
 def group_by_first(pairs):
     """Return a list of pairs that relates each unique key in the [key, value]
@@ -54,9 +54,7 @@ def group_by_centroid(restaurants, centroids):
     # BEGIN Question 4
     "*** REPLACE THIS LINE ***"
     # END Question 4
-    centroid_pairs=[]
-    for restaurant in restaurants:
-        centroid_pairs.append([find_closest(restaurant_location(restaurant), centroids), restaurant])
+    centroid_pairs= [[find_closest(restaurant_location(restaurant), centroids), restaurant] for restaurant in restaurants]
     return group_by_first(centroid_pairs)
 
 
@@ -166,10 +164,11 @@ def rate_all(user, restaurants, feature_fns):
     # END Question 9
 
     for restaurant in restaurants:
-    	if restaurant in reviewed:
-    		rating_dict[restaurant_name(restaurant)]= user_rating(user, restaurant_name(restaurant))
-    	else: 
-    		rating_dict[restaurant_name(restaurant)]= predictor(restaurant)
+        name = restaurant_name(restaurant)
+        if restaurant in reviewed:
+            rating_dict[name]= user_rating(user, name)
+        else: 
+            rating_dict[name]= predictor(restaurant)
     return rating_dict
 
 

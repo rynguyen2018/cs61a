@@ -319,18 +319,14 @@ def do_cond_form(expressions, env):
         else:
             test = scheme_eval(clause.first, env)
         if scheme_truep(test):
-            # BEGIN PROBLEM 14
-            "*** REPLACE THIS LINE ***"
-            # END PROBLEM 14
-            print(eval_all (clause.second)
-            #if test: 
-            #    return expressions.second
-            #else: 
-            #    if eval_all(clause,env)==True:
-            #        return expressions.second
-            #    return expressions.second
-            #if len(expressions)==1: 
-
+            value= eval_all(expressions.first.second, env)
+            if clause.first== 'else': 
+                return value
+            if test == True or (test != 0 ) or (test is 0):
+                if value == None:
+                    return test
+                else: 
+                    return value
         expressions = expressions.second
 
 def do_let_form(expressions, env):
@@ -339,6 +335,9 @@ def do_let_form(expressions, env):
     let_env = make_let_frame(expressions.first, env)
     return eval_all(expressions.second, let_env)
 
+
+###what the eff?? 
+###WHY IN DA HELL WAS THAT SO DIFFICULT
 def make_let_frame(bindings, env):
     """Create a child frame of ENV that contains the definitions given in
     BINDINGS. The Scheme list BINDINGS must have the form of a proper bindings
@@ -346,9 +345,26 @@ def make_let_frame(bindings, env):
     and a Scheme expression."""
     if not scheme_listp(bindings):
         raise SchemeError('bad bindings list in let form')
-    # BEGIN PROBLEM 15
-    "*** REPLACE THIS LINE ***"
-    # END PROBLEM 15
+    check_form(bindings,1)
+
+    check_form(bindings.first, 2, 2)
+    symbol_pair= "("
+    values_pair= "("
+    formals= bindings
+    for _ in range(0, len(bindings)):
+        check_formals(Pair(formals.first.first, nil))
+        symbol_pair+= str(formals.first.first) + " "
+        values_pair+= str(scheme_eval(formals.first.second.first, env)) + " "
+        formals= formals.second
+    symbol_pair+= ")"
+    values_pair+= ")"
+
+    symbol_pair= read_line(symbol_pair)
+    values_pair= read_line(values_pair)
+    check_formals(symbol_pair)
+    return env.make_child_frame(symbol_pair, values_pair)
+    
+
 
 def do_define_macro(expressions, env):
     """Evaluate a define-macro form."""
@@ -466,6 +482,10 @@ class MuProcedure(UserDefinedProcedure):
     # BEGIN PROBLEM 16
     "*** REPLACE THIS LINE ***"
     # END PROBLEM 16
+    def make_call_frame(self, args, env): 
+        child= env.make_child_frame(self.formals, args)
+        return child
+
 
     def __str__(self):
         return str(Pair('mu', Pair(self.formals, self.body)))
@@ -482,6 +502,8 @@ def do_mu_form(expressions, env):
     # BEGIN PROBLEM 16
     "*** REPLACE THIS LINE ***"
     # END PROBLEM 16
+    body= expressions.second
+    return MuProcedure(formals, body)
 
 SPECIAL_FORMS['mu'] = do_mu_form
 

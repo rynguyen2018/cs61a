@@ -5,10 +5,14 @@
 
 ; Some utility functions that you may find useful to implement.
 (define (map proc items)
-  'replace-this-line)
-
+  (if (null? items) nil
+    (cons (proc (car items)) (map proc (cdr items)))
+  )
+) 
 (define (cons-all first rests)
-  'replace-this-line)
+  (define (insert rest)
+    (cons first rest))
+    (map insert rests)) 
 
 (define (zip pairs)
   'replace-this-line)
@@ -16,17 +20,32 @@
 ;; Problem 17
 ;; Returns a list of two-element lists
 (define (enumerate s)
-  ; BEGIN PROBLEM 17
-  'replace-this-line
-  )
+    (define (helper s i new_lst)
+      ( if (null? s)
+            new_lst
+            ;(cons i (car s))))
+            (helper (cdr s) (+ i 1) (append new_lst (cons(cons i (cons (car s) nil)) nil   ) ))))
+
+    (helper s 0 ())
+)
   ; END PROBLEM 17
 
 ;; Problem 18
 ;; List all ways to make change for TOTAL with DENOMS
 (define (list-change total denoms)
-  ; BEGIN PROBLEM 18
-  'replace-this-line
-  )
+  (cond 
+    ((null? denoms) nil)
+    ((= total 0) '(nil))
+    ; take out coins that are too big
+    ((> (car denoms) total) (list-change total (cdr denoms)))
+    ;counting partitions in a way that I couldn't really explain to you well, but have learned to trust anyways
+    (else (append 
+      (cons-all (car denoms) (list-change (- total (car denoms)) denoms))
+      (list-change total (cdr denoms)))
+    )
+    ) 
+)
+  
   ; END PROBLEM 18
 
 ;; Problem 19
@@ -43,12 +62,12 @@
 (define (let-to-lambda expr)
   (cond ((atom? expr)
          ; BEGIN PROBLEM 19
-         'replace-this-line
+         expr
          ; END PROBLEM 19
          )
         ((quoted? expr)
          ; BEGIN PROBLEM 19
-         'replace-this-line
+         expr
          ; END PROBLEM 19
          )
         ((or (lambda? expr)
